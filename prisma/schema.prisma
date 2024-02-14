@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id             Int          @id @default(autoincrement())
+  email          String       @unique
+  name           String
+  username       String       @unique
+  hashedPassword String
+  isActive       Boolean      @default(true)
+  registeredAt   DateTime     @default(now())
+  followers      Int          @default(0)
+  followingCount Int          @default(0)
+  postsCount     Int          @default(0)
+  likesCount     Int          @default(0)
+  posts          Post[]
+  friendships    Friendship[] @relation("userA")
+  friendsWith    Friendship[] @relation("userB")
+  emailVerified  Boolean      @default(false)
+  phoneNumber    String?
+  bio            String?
+  quote          String?
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Friendship {
+  id      Int    @id @default(autoincrement())
+  userAId Int
+  userBId Int
+  userA   User   @relation("userA", fields: [userAId], references: [id])
+  userB   User   @relation("userB", fields: [userBId], references: [id])
+  status  String
+
+  @@unique([userAId, userBId])
+}
